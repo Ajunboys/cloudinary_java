@@ -1,24 +1,19 @@
 package com.cloudinary;
 
+import com.cloudinary.utils.Base64Coder;
+import com.cloudinary.utils.ObjectUtils;
+import com.cloudinary.utils.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
-
-import com.cloudinary.utils.Base64Coder;
-import com.cloudinary.utils.ObjectUtils;
-import com.cloudinary.utils.StringUtils;
 
 public class Url {
     private final Cloudinary cloudinary;
@@ -57,7 +52,8 @@ public class Url {
         cloned.fallbackContent = this.fallbackContent;
         cloned.format = this.format;
         cloned.posterSource = this.posterSource;
-        if (this.posterTransformation != null) cloned.posterTransformation = new Transformation(this.posterTransformation);
+        if (this.posterTransformation != null)
+            cloned.posterTransformation = new Transformation(this.posterTransformation);
         if (this.posterUrl != null) cloned.posterUrl = this.posterUrl.clone();
         cloned.publicId = this.publicId;
         cloned.resourceType = this.resourceType;
@@ -233,7 +229,7 @@ public class Url {
     public Url authToken(AuthToken authToken) {
         if (this.authToken == null) {
             this.authToken = authToken;
-        } else if(authToken == null || authToken.equals(AuthToken.NULL_AUTH_TOKEN)) {
+        } else if (authToken == null || authToken.equals(AuthToken.NULL_AUTH_TOKEN)) {
             this.authToken = authToken;
         } else {
             this.authToken = this.authToken.merge(authToken);
@@ -448,13 +444,13 @@ public class Url {
             } else if (resourceType.equals("image") && type.equals("private")) {
                 resourceType = "private_images";
                 type = null;
-            } else if (resourceType.equals("image") && type.equals("authenticated")){
+            } else if (resourceType.equals("image") && type.equals("authenticated")) {
                 resourceType = "authenticated_images";
                 type = null;
             } else if (resourceType.equals("raw") && type.equals("upload")) {
                 resourceType = "files";
                 type = null;
-            } else if (resourceType.equals("video") && type.equals("upload")){
+            } else if (resourceType.equals("video") && type.equals("upload")) {
                 resourceType = "videos";
                 type = null;
             } else {
@@ -538,9 +534,15 @@ public class Url {
     }
 
     public String imageTag(String source, Map<String, String> attributes) {
+        return imageTag(source, new TagOptions().attributes(attributes));
+    }
+
+    public String imageTag(String source, TagOptions tagOptions) {
+        TreeMap<String, String> attributes = tagOptions != null && tagOptions.getAttributes() != null ?
+                new TreeMap<>(tagOptions.getAttributes()) :
+                new TreeMap<String, String>(); // Make sure they are ordered.
+
         String url = generate(source);
-        attributes = new TreeMap<String, String>(attributes); // Make sure they
-        // are ordered.
         if (transformation().getHtmlHeight() != null)
             attributes.put("height", transformation().getHtmlHeight());
         if (transformation().getHtmlWidth() != null)
@@ -558,6 +560,23 @@ public class Url {
                 responsivePlaceholder = CL_BLANK;
             }
             url = responsivePlaceholder;
+        }
+
+        if (tagOptions != null && tagOptions.getSrcset() != null && !attributes.containsKey("srcset")) {
+            Srcset srcset = tagOptions.getSrcset();
+
+            Srcset.SrcsetResult result = srcset.generateSrcset(source, this);
+            attributes.put("srcset", result.srcset);
+            url = result.largestBreakpoint;
+
+            if (srcset.hasSizes()) {
+                attributes.put("sizes", srcset.generateSizes());
+            }
+        }
+
+        if (attributes.containsKey("srcset")) {
+            attributes.remove("width");
+            attributes.remove("height");
         }
 
         StringBuilder builder = new StringBuilder();
