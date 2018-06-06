@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class is used to configure srcset and sizes attributes for image tags. Used with {@link TagOptions#srcset(Srcset)}
+ * when calling {@link Url#imageTag(String, TagOptions)}, or directly using the Cloudinary tag lib library.
+ */
 public class Srcset {
     private final int[] breakpoints;
     private boolean sizes = false;
@@ -14,11 +18,23 @@ public class Srcset {
         this.breakpoints = breakpoints;
     }
 
+    /**
+     * Get an instance configured for specific width
+     * @param breakpoints An array of integers specifying the required widths, in pixels.
+     * @return The resulting Srcset instance to send to {@link TagOptions#srcset}
+     */
     public static Srcset breakpoints(int[] breakpoints) {
         Arrays.sort(breakpoints);
         return new Srcset(breakpoints);
     }
 
+    /**
+     * Get an instance configured for widths covering the requests range
+     * @param minWidth The width of the smallest image in pixels
+     * @param maxWidth The width of the largest image in pixels
+     * @param maxImages The total count of generated images.
+     * @return The resulting Srcset instance to send to {@link TagOptions#srcset}
+     */
     public static Srcset breakpoints(int minWidth, int maxWidth, int maxImages) {
         //max_images - 1 if max_images > 1 else 1)
         int stepSize = (int) Math.round(Math.ceil((float) (maxWidth - minWidth)) /
@@ -33,6 +49,11 @@ public class Srcset {
         return new Srcset(breakpoints);
     }
 
+    /**
+     * Set the sizes param to `true` to generate a sizes attribute.
+     * @param sizes
+     * @return
+     */
     public Srcset sizes(boolean sizes) {
         this.sizes = sizes;
         return this;
@@ -61,7 +82,7 @@ public class Srcset {
         return new SrcsetResult(StringUtils.join(srcsetItems, ", "), generatedUrl);
     }
 
-    public String generateSizes() {
+    String generateSizes() {
         String format = "(max-width: %dpx) %dpx";
         List<String> sizes = new ArrayList<>(breakpoints.length);
 
@@ -72,17 +93,20 @@ public class Srcset {
         return StringUtils.join(sizes, ", ");
     }
 
-    public boolean hasSizes() {
+    boolean hasSizes() {
         return sizes;
     }
 
-    public static final class SrcsetResult{
-        public final String srcset;
-        public final String largestBreakpoint;
+    /**
+     * Hold the results of the srcset generation
+     */
+    static final class SrcsetResult{
+        final String srcset;
+        final String largestBreakpoint;
 
-        public SrcsetResult(String srcset, String largestBreakpoint) {
+        SrcsetResult(String srcset, String largestBreakpointUrl) {
             this.srcset = srcset;
-            this.largestBreakpoint = largestBreakpoint;
+            this.largestBreakpoint = largestBreakpointUrl;
         }
     }
 }

@@ -524,19 +524,41 @@ public class Url {
         return String.valueOf((crc32.getValue() % 5 + 5) % 5 + 1);
     }
 
+    /**
+     * Generate an image tag based on the configured url parameters and the given source
+     * @param source The source to generate the url for (e.g. publicId, or a remote fetch url)
+     * @return The generated image tag.
+     */
     @SuppressWarnings("unchecked")
     public String imageTag(String source) {
         return imageTag(source, ObjectUtils.emptyMap());
     }
 
+    /**
+     * Generate an image tag based on the configured url parameters and the given attributes
+     * @param attributes a map of attributes to use in the tag.
+     * @return The generated image tag.
+     */
     public String imageTag(Map<String, String> attributes) {
         return imageTag(null, attributes);
     }
 
+    /**
+     * Generate an image tag based on the configured url parameters and the given attributes and source.
+     * @param source The source to generate the url for (e.g. publicId, or a remote fetch url)
+     * @param attributes a map of attributes to use in the tag.
+     * @return The generated image tag.
+     */
     public String imageTag(String source, Map<String, String> attributes) {
         return imageTag(source, new TagOptions().attributes(attributes));
     }
 
+    /**
+     * Generate an image tag based on the configured url parameters and the given tag options and source.
+     * @param source The source to generate the url for (e.g. publicId, or a remote fetch url)
+     * @param tagOptions a tag options instance with tag-specific configuration (see {@link TagOptions}).
+     * @return The generated image tag.
+     */
     public String imageTag(String source, TagOptions tagOptions) {
         TreeMap<String, String> attributes = tagOptions != null && tagOptions.getAttributes() != null ?
                 new TreeMap<>(tagOptions.getAttributes()) :

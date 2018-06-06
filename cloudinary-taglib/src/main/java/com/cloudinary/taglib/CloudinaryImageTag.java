@@ -56,6 +56,10 @@ public class CloudinaryImageTag extends CloudinaryUrl {
         out.println(url.imageTag(null, tagOptions));
     }
 
+    /**
+     * Set the srcset configuration instance for the tag. See {@link Srcset} for details
+     * @param srcset
+     */
     public void setSrcset(Srcset srcset){
         this.srcset = srcset;
     }
